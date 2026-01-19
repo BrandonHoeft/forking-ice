@@ -22,8 +22,15 @@ def create_s3_bucket(bucket_name: str, region: str) -> None:
     except Exception as e:
         print(f"An error occurred: {e}")
 
+## TODO: download request from moneypuck.com
+
+## TODO: upload_file_to_s3()
+
 if __name__ == "__main__":
 
     AWS_ACCOUNT_ID = boto3.client('sts').get_caller_identity()['Account']  # to use as unique id part in new s3 bucket
     BUCKET_NAME = f'forking-ice-{AWS_ACCOUNT_ID}'
     AWS_DEFAULT_REGION = boto3.Session().region_name
+
+    create_s3_bucket(BUCKET_NAME, AWS_DEFAULT_REGION)
+    print(boto3.client('s3').list_buckets())  # aka `aws s3 ls`
