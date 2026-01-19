@@ -3,16 +3,6 @@ import json
 from typing import Any, Dict
 
 
-def get_aws_account_id() -> str:
-    """calls AWS sts get-caller-identity and returns my AWS parsed account ID.
-
-    Returns
-    -------
-    str: example id '1393093803030'
-    """
-    sts_client = boto3.client('sts')
-    return sts_client.get_caller_identity()['Account']
-
 def create_s3_bucket(bucket_name: str, region: str) -> None:
     """create a new s3 bucket
 
@@ -34,6 +24,6 @@ def create_s3_bucket(bucket_name: str, region: str) -> None:
 
 if __name__ == "__main__":
 
-AWS_ACCOUNT_ID = get_aws_account_id()
-BUCKET_NAME = f'forking-ice-{AWS_ACCOUNT_ID}'
-AWS_DEFAULT_REGION = boto3.Session().region_name
+    AWS_ACCOUNT_ID = boto3.client('sts').get_caller_identity()['Account']  # to use as unique id part in new s3 bucket
+    BUCKET_NAME = f'forking-ice-{AWS_ACCOUNT_ID}'
+    AWS_DEFAULT_REGION = boto3.Session().region_name
