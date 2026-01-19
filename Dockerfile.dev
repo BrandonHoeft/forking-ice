@@ -1,0 +1,58 @@
+# ==============================================================================
+# Development Dockerfile for PyCharm Pro Local Development
+# ==============================================================================
+# Purpose: Provides an isolated Python 3.12 environment for PyCharm development
+#          without polluting the MacBook Pro M4 host system with Python packages
+#          or configurations.
+#
+# Usage: This Dockerfile is used exclusively with PyCharm Pro 2025.3 as a
+#        Docker-based Python interpreter. It is NOT intended for production
+#        deployment to AWS or other cloud environments.
+#
+# Build: docker build -f Dockerfile.dev -t py312-forking-ice-dev:latest .
+#
+# PyCharm Setup:
+#   - Settings → Project → Python Interpreter → Add → On Docker
+#   - Select image: py312-forking-ice-dev:latest
+#   - PyCharm will automatically mount your project directory and manage
+#     the container lifecycle (start/stop).
+#
+# Note: PyCharm overrides the container's working directory with the actual
+#       mount path, so no WORKDIR is specified here.
+# ==============================================================================
+
+# Use official Python 3.12 slim image (Debian-based, ARM64 compatible for M4)
+FROM python:3.12-slim
+
+# Prevent Python from writing .pyc files and enable unbuffered output
+# PYTHONDONTWRITEBYTECODE: Reduces clutter in mounted volumes
+# PYTHONUNBUFFERED: Ensures logs appear immediately in PyCharm console
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+# Install minimal system dependencies needed for common Python packages
+# build-essential: C compiler for packages with native extensions
+# curl: Useful for debugging and downloading files
+# git: Required for pip install from git repositories
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user 'developer' with UID 1000 to match typical macOS user
+# This ensures files created in the container have correct ownership on the host
+RUN groupadd -g 1000 developer && \
+    useradd -u 1000 -g developer -s /bin/bash -m developer
+
+# Copy requirements.txt and install Python dependencies
+# These packages will be available in PyCharm's autocomplete and at runtime
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Switch to non-root user for security and file permission compatibility
+USER developer
+
+# Keep container running indefinitely so PyCharm can execute code in it
+# PyCharm will attach to this running container and execute Python scripts
+CMD ["tail", "-f", "/dev/null"]
