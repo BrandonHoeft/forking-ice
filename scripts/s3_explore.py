@@ -22,8 +22,6 @@ def create_s3_bucket(bucket_name: str, region: str) -> None:
     except Exception as e:
         print(f"An error occurred: {e}")
 
-## TODO: download request from moneypuck.com
-
 ## TODO: upload_file_to_s3()
 
 if __name__ == "__main__":
