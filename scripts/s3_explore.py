@@ -10,6 +10,12 @@ def create_s3_bucket(bucket_name: str, region: str) -> None:
     ----------
     bucket_name: something likely to be unique to avoid global S3 name conflict
     region: e.g. 'us-east-2' or 'us-west-1'
+
+    Note
+    ----
+    In us-east-1, calling this on a bucket you already own is idempotent - it
+    returns success without modifying existing bucket configurations (ACLs,
+    policies, etc.). Behavior may differ in other regions.
     """
     # Create an S3 client
     s3_client = boto3.client('s3', region_name=region)
